@@ -1,7 +1,12 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+
 import ReduxProvider from "../providers/ReduxProvider";
+import { PrimeReactProvider } from "primereact/api";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,14 +21,22 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
+        <meta name="theme-color" content="#f97316" />
+        <title>Email App</title>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ReduxProvider>
-          <main >
-            {children}
-          </main>
-        </ReduxProvider>
+        <PrimeReactProvider value={{ ripple: true, locale: "en" }}>
+          <ReduxProvider>
+            <main>
+              {children}
+            </main>
+          </ReduxProvider>
+        </PrimeReactProvider>
       </body>
     </html>
   );

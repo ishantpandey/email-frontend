@@ -1,12 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { setAuthData } from '../../store/slices/authSlice';
-import Logo from '../../component/Logo';
-import Notification from '../../component/Notification';
-import AnimatedButton from '../../component/AnimatedButton';
+import dynamic from 'next/dynamic';
+const AnimatedButton = dynamic(() => import('../../component/AnimatedButton'), { ssr: false });
+const Notification = dynamic(() => import('../../component/Notification'), { ssr: false });
+const Logo = dynamic(() => import('../../component/Logo'), { ssr: false });
 import MobileNavigation from '../../component/MobileNavigation';
+import { FaSpinner, FaCheck, FaTimes } from 'react-icons/fa';
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -100,17 +102,17 @@ export default function VerifyPage() {
     }
   };
 
-  const handleReturnHome = () => {
+  const handleReturnHome = useCallback(() => {
     router.push('/');
-  };
+  }, [router]);
 
-  const handleGoToLogin = () => {
+  const handleGoToLogin = useCallback(() => {
     router.push('/login');
-  };
+  }, [router]);
 
-  const dismissNotification = () => {
+  const dismissNotification = useCallback(() => {
     setNotification(null);
-  };
+  }, []);
 
   return (
     <>
@@ -143,10 +145,7 @@ export default function VerifyPage() {
               {isLoading ? (
                 <>
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
-                    <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <FaSpinner className="animate-spin h-8 w-8 text-blue-600" />
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-4">
                     Verifying Your Email
@@ -158,9 +157,7 @@ export default function VerifyPage() {
               ) : verificationStatus === 'success' ? (
                 <>
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-                    <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                    <FaCheck className="h-8 w-8 text-green-600" />
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-4">
                     Email Verified Successfully!
@@ -186,9 +183,7 @@ export default function VerifyPage() {
               ) : (
                 <>
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
-                    <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                    <FaTimes className="h-8 w-8 text-red-600" />
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-4">
                     Verification Failed

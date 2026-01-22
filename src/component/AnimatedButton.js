@@ -16,7 +16,7 @@ export default function AnimatedButton({
   const [isPressed, setIsPressed] = useState(false);
 
   const variants = {
-    primary: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/25 focus:ring-4 focus:ring-blue-300",
+    primary: "bg-orange-500 text-white hover:bg-orange-600 text-white shadow-lg hover:shadow-xl focus:ring-4 ",
     secondary: "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white hover:shadow-xl hover:border-gray-300 focus:ring-4 focus:ring-gray-200",
     ghost: "text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200 focus:ring-4 focus:ring-blue-100",
     danger: "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl hover:shadow-red-500/25 focus:ring-4 focus:ring-red-300",

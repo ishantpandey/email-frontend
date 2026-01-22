@@ -1,6 +1,20 @@
 "use client";
 import { useSelector } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
+import {
+  MdInbox,
+  MdStar,
+  MdStarOutline,
+  MdDrafts,
+  MdDescription,
+  MdSubscriptions,
+  MdSchedule,
+  MdGroup,
+  MdDelete,
+  MdClose,
+  MdAdd,
+  MdEmail,
+} from "react-icons/md";
 
 export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
   const { user } = useSelector((state) => state.auth);
@@ -13,8 +27,8 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
       case 'compose':
         router.push('/mail');
         break;
-      case 'inbox':
-        router.push('/mail/inbox');
+      case 'all-mails':
+        router.push('/mail/all-mails');
         break;
       case 'primary':
         router.push('/mail/primary');
@@ -51,33 +65,33 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
 
   // Navigation items for email management
   const navigationItems = [
-    { id: "inbox", label: "Inbox", icon: "📥", count: 12, route: "/mail/inbox" },
-    { id: "primary", label: "Primary", icon: "⭐", count: 5, route: "/mail/primary" },
-    { id: "starred", label: "Starred", icon: "⭐", count: 3, route: "/mail/starred" },
-    { id: "draft", label: "Draft", icon: "📝", count: 2, route: "/mail/draft" },
-    { id: "template", label: "Template", icon: "📄", count: 7, route: "/mail/templates" },
+    { id: "all-mails", label: "All Mails", icon: <MdEmail className="w-5 h-5 text-orange-500" />, count: 12, route: "/mail/all-mails" },
+    { id: "primary", label: "Primary", icon: <MdStarOutline className="w-5 h-5 text-orange-500" />, count: 5, route: "/mail/primary" },
+    { id: "starred", label: "Starred", icon: <MdStar className="w-5 h-5 text-orange-500" />, count: 3, route: "/mail/starred" },
+    { id: "draft", label: "Draft", icon: <MdDrafts className="w-5 h-5 text-orange-500" />, count: 2, route: "/mail/draft" },
+    { id: "template", label: "Template", icon: <MdDescription className="w-5 h-5 text-orange-500" />, count: 7, route: "/mail/templates" },
     {
       id: "subscription",
       label: "Subscription",
-      icon: "📊",
+      icon: <MdSubscriptions className="w-5 h-5 text-orange-500" />,
       count: 15,
       route: "/mail/subscriptions"
     },
     {
       id: "scheduled",
       label: "Scheduled",
-      icon: "⏰",
+      icon: <MdSchedule className="w-5 h-5 text-orange-500" />,
       count: 4,
       route: "/mail/scheduled"
     },
     {
       id: "allusers",
       label: "All Users",
-      icon: "👥",
+      icon: <MdGroup className="w-5 h-5 text-orange-500" />,
       count: 342,
       route: "/mail/users"
     },
-    { id: "bin", label: "Bin", icon: "🗑️", count: 8, route: "/mail/bin" },
+    { id: "bin", label: "Bin", icon: <MdDelete className="w-5 h-5 text-orange-500" />, count: 8, route: "/mail/bin" },
   ];
 
   // Check if item is active based on current path
@@ -96,31 +110,17 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
           <h3 className="text-lg font-semibold text-gray-900">Email</h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+            className="p-2 hover:bg-orange-50 rounded-lg transition-colors lg:hidden"
           >
-            <svg
-              className="w-5 h-5 text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <MdClose className="w-6 h-6 text-gray-500" />
           </button>
         </div>
       </div>
 
       {/* Compose Button */}
       <div className="p-4 border-b border-gray-200">
-        <button onClick={() => router.push('/mail')} className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+        <button onClick={() => router.push('/mail')} className="w-full flex items-center justify-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+          <MdAdd className="w-6 h-6" />
           <span> Compose</span>
         </button>
       </div>
@@ -135,22 +135,22 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-gray-50 ${
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-orange-50 ${
                   isActive
-                    ? "bg-blue-100 text-blue-700 border border-blue-200"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-orange-100 text-orange-700 border border-orange-200"
+                    : "text-gray-700 hover:bg-orange-50"
                 }`}
                 title={`Navigate to ${item.label}`}
               >
                 <div className="flex items-center space-x-3">
-                  <span className="text-base">{item.icon}</span>
+                  {item.icon}
                   <span>{item.label}</span>
                 </div>
                 {item.count && (
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       isActive
-                        ? "bg-blue-200 text-blue-800"
+                        ? "bg-orange-200 text-orange-800"
                         : "bg-gray-200 text-gray-600"
                     }`}
                   >

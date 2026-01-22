@@ -1,12 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { FaArrowRight, FaEnvelope, FaExclamationCircle, FaEye, FaEyeSlash, FaLock, FaSpinner } from 'react-icons/fa';
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setAuthData, setAuthError } from "../../store/slices/authSlice";
-import AnimatedButton from "../../component/AnimatedButton";
-import Notification from "../../component/Notification";
-import ForgotPasswordModal from "../../component/ForgotPasswordModal";
 import MobileNavigation from "../../component/MobileNavigation";
+import { setAuthData, setAuthError, setLoading } from "../../store/slices/authSlice";
+const AnimatedButton = dynamic(() => import("../../component/AnimatedButton"), { ssr: false });
+const Notification = dynamic(() => import("../../component/Notification"), { ssr: false });
+const ForgotPasswordModal = dynamic(() => import("../../component/ForgotPasswordModal"), { ssr: false });
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,7 +37,7 @@ export default function LoginPage() {
     rememberMe: false,
   });
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -43,14 +45,14 @@ export default function LoginPage() {
     }));
     // Clear error when user types
     if (error) setError("");
-  };
+  }, [error]);
 
-  const validateEmail = (email) => {
+  const validateEmail = useCallback((email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
 
     // Client-side validation
@@ -140,7 +142,7 @@ export default function LoginPage() {
     } finally {
       dispatch(setLoading(false));
     }
-  };
+  }, [formData, router, searchParams, dispatch, validateEmail]);
 
   const handleForgotPassword = () => {
     setShowForgotPasswordModal(true);
@@ -203,274 +205,150 @@ export default function LoginPage() {
   return (
     <>
       <MobileNavigation />
-      <div className="min-h-[calc(100vh-4rem)]  via-amber-50 to-yellow-50 relative overflow-hidden">
+      <div className="min-h-[calc(100vh-5rem)] bg-white relative overflow-hidden">
         {/* Notification */}
         <Notification 
           notification={notification} 
           onDismiss={dismissNotification}
         />
-      
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal
-        isOpen={showForgotPasswordModal}
-        onClose={closeForgotPasswordModal}
-        onSubmit={handleForgotPasswordSubmit}
-        initialEmail={formData.email}
-        isLoading={isResettingPassword}
-      />
-      
-      {/* Animated background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-orange-200/20 to-amber-200/20 rounded-full blur-3xl animate-pulse"></div>
-        <div
-          className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-yellow-200/15 to-orange-200/15 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute bottom-20 left-1/3 w-96 h-96 bg-gradient-to-br from-amber-200/15 to-orange-200/15 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "4s" }}
-        ></div>
-      </div>
-
-      <div className="flex items-center justify-center py-8 px-4 min-h-[calc(100vh-4rem)]">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-800 to-amber-700 bg-clip-text text-transparent mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-orange-700">Sign in to your FlowMail account</p>
-          </div>
-
-        {/* Login Form */}
-        <div className="bg-orange-50/80 backdrop-blur-xl rounded-3xl p-4 border border-orange-100 shadow-xl">
-            {/* Error Message */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 text-red-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+        {/* Forgot Password Modal */}
+        <ForgotPasswordModal
+          isOpen={showForgotPasswordModal}
+          onClose={closeForgotPasswordModal}
+          onSubmit={handleForgotPasswordSubmit}
+          initialEmail={formData.email}
+          isLoading={isResettingPassword}
+        />
+        {/* Animated background elements */}
+       
+        <div className="flex items-center justify-center py-5 px-4 h-full">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="text-center mb-4">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-800 to-amber-700 bg-clip-text text-transparent mb-2">
+                Welcome Back
+              </h1>
+              <p className="text-orange-700">Sign in to your FlowMail account</p>
+            </div>
+            {/* Login Form */}
+            <div className="bg-orange-50/80 backdrop-blur-xl rounded-3xl p-4 border border-orange-100 shadow-xl">
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex items-center">
+                    <FaExclamationCircle className="w-5 h-5 text-red-500 mr-2" />
+                    <p className="text-red-700 text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-4 p-4">
+                {/* Email Field */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-orange-800 mb-2 flex items-center gap-1"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    <FaEnvelope /> Email Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 pl-12 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter your email"
                     />
-                  </svg>
-                  <p className="text-red-700 text-sm">{error}</p>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4 p-4">
-              {/* Email Field */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-orange-800 mb-2"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 pl-12 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your email"
-                  />
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                    <svg
-                      className="w-5 h-5 text-orange-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                      <FaEnvelope className="w-5 h-5 text-orange-400" />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-orange-800 mb-1"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 pl-10 pr-10 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your password"
-                  />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                    <svg
-                      className="w-4 h-4 text-orange-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {/* Password Field */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-orange-800 mb-1 flex items-center gap-1"
+                  >
+                    <FaLock /> Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 pl-10 pr-10 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter your password"
+                    />
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                      <FaLock className="w-4 h-4 text-orange-400" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-400 hover:text-orange-600 transition-colors"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
+                      {showPassword ? (
+                        <FaEyeSlash className="w-4 h-4" />
+                      ) : (
+                        <FaEye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
+                </div>
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-orange-700">
+                      Remember me
+                    </span>
+                  </label>
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-400 hover:text-orange-600 transition-colors"
+                    onClick={handleForgotPassword}
+                    className="text-sm text-orange-600 hover:text-orange-800 font-medium"
                   >
-                    {showPassword ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    )}
+                    Forgot password?
                   </button>
                 </div>
-              </div>
-
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-orange-600 border-orange-300 rounded focus:ring-orange-500"
-                  />
-                  <span className="ml-2 text-sm text-orange-700">
-                    Remember me
-                  </span>
-                </label>
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-orange-600 hover:text-orange-800 font-medium"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-
-              {/* Submit Button */}
-              <AnimatedButton
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Signing In...
+                {/* Sign In Button */}
+                <AnimatedButton type="submit" className="w-full mt-2">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <FaSpinner className="animate-spin mr-2" /> Signing In...
+                    </div>
+                  ) : (
+                    <>
+                      Sign In
+                      <FaArrowRight className="ml-2 w-5 h-5" />
+                    </>
+                  )}
+                </AnimatedButton>
+                {/* Social Login */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-orange-200"></div>
                   </div>
-                ) : (
-                  <>
-                    Sign In
-                    <svg
-                      className="ml-2 w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </>
-                )}
-              </AnimatedButton>
-
-              {/* Social Login */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-orange-200"></div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-orange-50 text-orange-500">
+                      Or continue with
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-orange-50 text-orange-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
+                <div className="grid grid-cols-2 gap-3">
+                 <button
                   type="button"
                   className="flex items-center justify-center px-4 py-2 border border-orange-200 rounded-xl bg-white/90 hover:bg-white transition-all duration-200 group"
                 >
@@ -496,7 +374,7 @@ export default function LoginPage() {
                     Google
                   </span>
                 </button>
-                <button
+                  <button
                   type="button"
                   className="flex items-center justify-center px-4 py-2 border border-orange-200 rounded-xl bg-white/90 hover:bg-white transition-all duration-200 group"
                 >
@@ -515,25 +393,24 @@ export default function LoginPage() {
                     GitHub
                   </span>
                 </button>
-              </div>
-            </form>
+                </div>
+              </form>
+            </div>
+            {/* Sign Up Link */}
+            <div className="text-center mt-4">
+              <p className="text-orange-700">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => router.push('/register')}
+                  className="text-orange-600 hover:text-orange-800 font-medium underline bg-transparent border-none cursor-pointer"
+                >
+                  Sign up for free
+                </button>
+              </p>
+            </div>
           </div>
-
-        {/* Sign Up Link */}
-        <div className="text-center mt-4">
-          <p className="text-orange-700">
-            Don't have an account?{" "}
-            <button
-              onClick={() => router.push("/register")}
-              className="text-orange-600 hover:text-orange-800 font-medium underline bg-transparent border-none cursor-pointer"
-            >
-              Sign up for free
-            </button>
-          </p>
-        </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

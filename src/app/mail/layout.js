@@ -1,73 +1,75 @@
-'use client';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import Logo from '@/component/Logo';
-import ComposeSidebar from '@/component/ComposeSidebar';
-import MobileNavigation from '@/component/MobileNavigation';
+"use client";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import Logo from "@/component/Logo";
+import ComposeSidebar from "@/component/ComposeSidebar";
+import MobileNavigation from "@/component/MobileNavigation";
+import AuthWrapper from "@/component/AuthWrapper";
 
 export default function ComposeLayout({ children }) {
   const { user } = useSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
 
   return (
-    <div className="h-screen  flex flex-col overflow-hidden">
-      {/* Mobile Navigation */}
-      <MobileNavigation 
-        sidebarOpen={sidebarOpen}
-        onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-      
-      {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Sidebar */}
-        <div 
-          className={`w-80 md:w-72 lg:w-80 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
-            sidebarOpen 
-              ? 'fixed left-0 top-16 h-[calc(100vh-64px)] transform translate-x-0 z-30' 
-              : 'fixed left-0 top-16 h-[calc(100vh-64px)] transform -translate-x-full z-30'
-          } lg:relative lg:top-0 lg:h-full lg:translate-x-0 lg:block`}
-        >
-          <ComposeSidebar 
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-          />
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto">
-            <div className="h-full p-2 sm:p-4">
-              {children}
-            </div>
-          </main>
-
-          {/* Footer */}
-          <footer className="bg-white border-t border-gray-200 px-3 sm:px-6 py-2 sm:py-3 flex-shrink-0">
-            <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <span className="hidden sm:inline">💡 Tip: Use Ctrl+Enter to send quickly</span>
-                <span className="sm:hidden">💡 Quick send: Ctrl+Enter</span>
-              </div>
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <span className="hidden sm:inline">Auto-save enabled</span>
-                <span className="sm:hidden">Auto-save</span>
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
-              </div>
-            </div>
-          </footer>
-        </div>
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          style={{ top: '64px' }} // Account for mobile navigation
-          onClick={() => setSidebarOpen(false)}
+    <AuthWrapper>
+      <div className="h-screen  flex flex-col overflow-hidden">
+        {/* Mobile Navigation */}
+        <MobileNavigation
+          sidebarOpen={sidebarOpen}
+          onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-      )}
-    </div>
+
+        {/* Main Layout */}
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Sidebar */}
+          <div
+            className={`w-80 md:w-72 lg:w-80 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
+              sidebarOpen
+                ? "fixed left-0 top-16 h-[calc(100vh-64px)] transform translate-x-0 z-30"
+                : "fixed left-0 top-16 h-[calc(100vh-64px)] transform -translate-x-full z-30"
+            } lg:relative lg:top-0 lg:h-full lg:translate-x-0 lg:block`}
+          >
+            <ComposeSidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+            />
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+            {/* Main Content */}
+            <main className="flex-1 overflow-y-auto">
+              <div className="h-full p-2 sm:p-2">{children}</div>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 px-3 sm:px-6 py-2 sm:py-3 flex-shrink-0">
+              <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
+                <div className="flex items-center space-x-2 sm:space-x-4">
+                  <span className="hidden sm:inline">
+                    💡 Tip: Use Ctrl+Enter to send quickly
+                  </span>
+                  <span className="sm:hidden">💡 Quick send: Ctrl+Enter</span>
+                </div>
+                <div className="flex items-center space-x-2 sm:space-x-4">
+                  <span className="hidden sm:inline">Auto-save enabled</span>
+                  <span className="sm:hidden">Auto-save</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            style={{ top: "64px" }} // Account for mobile navigation
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </div>
+    </AuthWrapper>
   );
 }
