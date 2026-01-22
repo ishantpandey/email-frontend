@@ -136,37 +136,39 @@ export default function AllMailsPage() {
   const displayedEmails = emails.slice(first, first + rows);
 
   return (
-    <div className="h-[calc(100vh-9rem)] bg-white border py-0 sm:py-1 md:py-1 px-0 sm:px-2 md:px-2 rounded-none  sm:rounded-lg border-gray-200">
-      {/* Header */}
-      <div className="border-b border-gray-200 px-4 pt-2">
-        <div className="flex items-center justify-between ">
-          <h1 className="text-xl font-medium text-gray-900">All Mails</h1>
-          <div className="flex items-center gap-2">
-             {selectedEmails.length > 0 && (
-              <Button
-                label="Delete"
-                icon="pi pi-trash"
-                className="p-button-danger"
-                size="small"
-                style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
-              />
-            )}
-            <button
-              className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-              // tooltip="Refresh"
-            >
-              <MdRefresh className="w-5 h-5 text-orange-500" />
-            </button>
-           
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Email Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <div className="h-full">
+      <div className="w-full max-w-none sm:max-w-8xl mx-0 sm:mx-1 md:mx-1 lg:mx-1 py-0 sm:py-1 md:py-1">
+        {/* Main Content Card */}
+        <div className="bg-white border-0 sm:border rounded-none sm:rounded-lg border-gray-200 overflow-hidden shadow-none w-full">
+          <div className="p-2 sm:p-6 md:p-8">
+            {/* All Mails Section */}
+            <div className="bg-white">
+              <div className="flex items-center mb-6">
+                <div className="w-2 h-6 bg-orange-500 rounded-full mr-3"></div>
+                <h4 className="text-xl font-semibold text-gray-900">
+                  All Mails
+                </h4>
+                <div className="flex items-center gap-2 ml-auto">
+                  {selectedEmails.length > 0 && (
+                    <Button
+                      label="Delete"
+                      icon="pi pi-trash"
+                      className="p-button-danger"
+                      size="small"
+                      style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
+                    />
+                  )}
+                  <button
+                    className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                    // tooltip="Refresh"
+                  >
+                    <MdRefresh className="w-5 h-5 text-orange-500" />
+                  </button>
+                </div>
+              </div>
+              {/* Email Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="w-10 px-3 py-2">
@@ -247,7 +249,7 @@ export default function AllMailsPage() {
       </div>
 
       {/* Pagination */}
-      <div className="border-t border-gray-200 px-2 ">
+      <div className="border-t border-gray-200 px-0 sm:px-2 py-3 sm:py-4 mt-4 sm:mt-6">
         <Paginator
           first={first}
           rows={rows}
@@ -279,6 +281,10 @@ export default function AllMailsPage() {
             }
           }}
         />
+      </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

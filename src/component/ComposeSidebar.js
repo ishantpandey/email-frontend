@@ -96,8 +96,8 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
 
   // Check if item is active based on current path
   const isItemActive = (route) => {
-    if (route === '/compose') {
-      return pathname === '/compose' || pathname.startsWith('/compose/');
+    if (route === '/compose-mail') {
+      return pathname === '/compose-mail' || pathname.startsWith('/compose-mail/');
     }
     return pathname === route;
   };
@@ -107,23 +107,23 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Email</h3>
-          <button
+         <button onClick={() => router.push('/mail/compose-mail')} className="w-full flex items-center justify-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+          <MdAdd className="w-6 h-6" />
+          <span> Compose</span>
+        </button>
+          {/* <button
             onClick={onClose}
             className="p-2 hover:bg-orange-50 rounded-lg transition-colors lg:hidden"
           >
             <MdClose className="w-6 h-6 text-gray-500" />
-          </button>
+          </button> */}
         </div>
       </div>
 
       {/* Compose Button */}
-      <div className="p-4 border-b border-gray-200">
-        <button onClick={() => router.push('/mail')} className="w-full flex items-center justify-center space-x-2 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
-          <MdAdd className="w-6 h-6" />
-          <span> Compose</span>
-        </button>
-      </div>
+      {/* <div className="p-4 border-b border-gray-200">
+        
+      </div> */}
 
       {/* Navigation Menu */}
       <div className="p-4 border-b border-gray-200">

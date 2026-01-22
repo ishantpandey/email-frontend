@@ -3,12 +3,14 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import Logo from "@/component/Logo";
 import ComposeSidebar from "@/component/ComposeSidebar";
+import EmailList from "@/component/EmailList";
 import MobileNavigation from "@/component/MobileNavigation";
 import AuthWrapper from "@/component/AuthWrapper";
 
 export default function ComposeLayout({ children }) {
   const { user } = useSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
+  const [selectedEmailId, setSelectedEmailId] = useState(null);
 
   return (
     <AuthWrapper>
@@ -23,7 +25,7 @@ export default function ComposeLayout({ children }) {
         <div className="flex-1 flex overflow-hidden relative">
           {/* Sidebar */}
           <div
-            className={`w-80 md:w-72 lg:w-80 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
+            className={`w-64 md:w-56 lg:w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
               sidebarOpen
                 ? "fixed left-0 top-16 h-[calc(100vh-64px)] transform translate-x-0 z-30"
                 : "fixed left-0 top-16 h-[calc(100vh-64px)] transform -translate-x-full z-30"
@@ -35,11 +37,19 @@ export default function ComposeLayout({ children }) {
             />
           </div>
 
+          {/* Email List */}
+          <div className=" flex-shrink-0">
+            <EmailList
+              selectedEmailId={selectedEmailId}
+              onEmailSelect={setSelectedEmailId}
+            />
+          </div>
+
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+          <div className=" flex-1 flex flex-col min-w-0 lg:ml-0">
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
-              <div className="h-full p-2 sm:p-2">{children}</div>
+              <div className="  h-full p-2 sm:p-2">{children}</div>
             </main>
 
             {/* Footer */}
