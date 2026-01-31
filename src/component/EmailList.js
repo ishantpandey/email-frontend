@@ -1,104 +1,43 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MdStar, MdStarBorder, MdAttachment, MdDelete, MdRefresh, MdCalendarToday } from "react-icons/md";
 
-export default function EmailList({ selectedEmailId, onEmailSelect }) {
-  // Sample email data
-  const [emails] = useState([
-    {
-      id: 1,
-      from: "John Doe",
-      email: "john.doe@example.com",
-      subject: "Project Update - Q4 Review Meeting",
-      preview: "Hi team, I wanted to share the latest updates on our Q4 project...",
-      time: "10:30 AM",
-      starred: true,
-      read: false,
-      hasAttachment: false,
-    },
-    {
-      id: 2,
-      from: "TechCrunch Newsletter",
-      email: "newsletter@techcrunch.com",
-      subject: "Weekly Tech News - AI Developments",
-      preview: "This week in tech: OpenAI announces new features, Google updates...",
-      time: "9:15 AM",
-      starred: false,
-      read: true,
-      hasAttachment: false,
-    },
-    {
-      id: 3,
-      from: "Support Team",
-      email: "support@company.com",
-      subject: "Your account has been updated",
-      preview: "Your account settings have been successfully updated. Here are the...",
-      time: "Yesterday",
-      starred: false,
-      read: true,
-      hasAttachment: true,
-    },
-    {
-      id: 4,
-      from: "Slack Team",
-      email: "team@slack.com",
-      subject: "New message from Development Team",
-      preview: "You have 3 new messages in #development channel. Click to view...",
-      time: "Yesterday",
-      starred: true,
-      read: false,
-      hasAttachment: false,
-    },
-    {
-      id: 5,
-      from: "GitHub",
-      email: "notifications@github.com",
-      subject: "Pull request #123 has been merged",
-      preview: "Your pull request 'Fix authentication bug' has been successfully...",
-      time: "2 days ago",
-      starred: false,
-      read: true,
-      hasAttachment: false,
-    },
-    {
-      id: 6,
-      from: "System Admin",
-      email: "admin@system.com",
-      subject: "System maintenance scheduled",
-      preview: "Scheduled maintenance will occur on Sunday at 2:00 AM UTC...",
-      time: "3 days ago",
-      starred: false,
-      read: false,
-      hasAttachment: true,
-    },
-    {
-      id: 7,
-      from: "Marketing Team",
-      email: "marketing@company.com",
-      subject: "New product launch announcement",
-      preview: "We're excited to announce the launch of our new product line...",
-      time: "1 week ago",
-      starred: true,
-      read: true,
-      hasAttachment: false,
-    },
-    {
-      id: 8,
-      from: "HR Department",
-      email: "hr@company.com",
-      subject: "Monthly team meeting reminder",
-      preview: "Don't forget about our monthly all-hands meeting scheduled...",
-      time: "1 week ago",
-      starred: false,
-      read: true,
-      hasAttachment: false,
-    },
-  ]);
+export default function EmailList({ selectedEmailId, onEmailSelect, emails = [], loading = false, error = null, onRefresh }) {
+  const router = useRouter();
+  
+  // Transform API data to component format
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays <= 7) return `${diffDays} days ago`;
+    if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    
+    return date.toLocaleDateString();
+  };
+
+  const stripHtml = (html) => {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    return temp.textContent || temp.innerText || '';
+  };
+
+  // Use emails directly, ensure it's always an array
+  const emailList = Array.isArray(emails) ? emails : [];
 
   const [starredEmails, setStarredEmails] = useState(
-    emails.filter((email) => email.starred).map((email) => email.id)
+    emailList.filter((email) => email.isStarred).map((email) => email._id)
   );
   const [selectedEmails, setSelectedEmails] = useState([]);
+
+  const handleEmailClick = (emailId) => {
+    // Navigate to view-mail page with email id as parameter
+    router.push(`/mail/view-mail/${emailId}`);
+  };
 
   const handleStarToggle = (emailId, e) => {
     e.stopPropagation();
@@ -119,9 +58,9 @@ export default function EmailList({ selectedEmailId, onEmailSelect }) {
   };
 
   return (
-    <div className="w-98 lg:w-96 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-98 lg:w-90 bg-white border-r  border-gray-200 flex flex-col h-full">
       {/* Header */}
-      <div className="border-b border-gray-200 p-4 flex-shrink-0">
+      <div className="border-b rounded-md border-gray-200 p-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Inbox</h3>
           
@@ -136,11 +75,12 @@ export default function EmailList({ selectedEmailId, onEmailSelect }) {
               <MdDelete className="w-4 h-4 text-orange-600" />
             </button>
             <button
-              onClick={() => console.log('Refresh emails')}
+              onClick={onRefresh}
               className="p-2 hover:bg-orange-100 rounded-md transition-colors"
               title="Refresh emails"
+              disabled={loading}
             >
-              <MdRefresh className="w-4 h-4 text-orange-600" />
+              <MdRefresh className={`w-4 h-4 text-orange-600 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={() => console.log('Open calendar')}
@@ -149,36 +89,62 @@ export default function EmailList({ selectedEmailId, onEmailSelect }) {
             >
               <MdCalendarToday className="w-4 h-4 text-orange-600" />
             </button>
-            <span className="text-sm text-orange-600 font-medium">{emails.length}</span>
+            <span className="text-sm text-orange-600 font-medium">{emailList.length}</span>
           </div>
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && emailList.length === 0 && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <MdRefresh className="w-8 h-8 text-orange-600 animate-spin mx-auto mb-2" />
+            <p className="text-gray-500">Loading emails...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && emailList.length === 0 && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-500 mb-2">Error: {error}</p>
+            <button
+              onClick={onRefresh}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Email List */}
+      {(!loading || emailList.length > 0) && (
       <div className="flex-1 overflow-y-auto">
-        {emails.map((email) => (
+        {emailList.map((email) => (
           <div
-            key={email.id}
-            onClick={() => onEmailSelect?.(email.id)}
-            className={`border-b border-gray-100 p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-              selectedEmailId === email.id ? "bg-orange-50 border-l-4 border-l-orange-500" : ""
-            } ${!email.read ? "bg-blue-50" : ""}`}
+            key={email._id}
+            onClick={() => onEmailSelect?.(email._id)}
+            className={`border-b rounded-md border-gray-200 shadow-sm p-2 hover:bg-gray-50 cursor-pointer transition-colors ${
+              selectedEmailId === email._id ? "bg-orange-50 border-l-4 border-l-orange-500" : ""
+            }`}
           >
             <div className="flex items-start space-x-3">
               {/* Checkbox */}
               <input
                 type="checkbox"
-                checked={selectedEmails.includes(email.id)}
-                onChange={(e) => handleEmailSelect(email.id, e)}
+                checked={selectedEmails.includes(email._id)}
+                onChange={(e) => handleEmailSelect(email._id, e)}
                 className="mt-1 w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
               />
               
               {/* Star */}
               <button
-                onClick={(e) => handleStarToggle(email.id, e)}
+                onClick={(e) => handleStarToggle(email._id, e)}
                 className="mt-1 hover:bg-gray-100 p-1 rounded"
               >
-                {starredEmails.includes(email.id) ? (
+                {email.isStarred ? (
                   <MdStar className="w-4 h-4 text-orange-500" />
                 ) : (
                   <MdStarBorder className="w-4 h-4 text-gray-400 hover:text-orange-500" />
@@ -186,42 +152,54 @@ export default function EmailList({ selectedEmailId, onEmailSelect }) {
               </button>
 
               {/* Email Content */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0" onClick={() => handleEmailClick(email._id)}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center space-x-2 min-w-0">
                     <h4
-                      className={`text-sm truncate ${
-                        !email.read ? "font-semibold text-gray-900" : "font-medium text-gray-700"
-                      }`}
+                      className="text-sm truncate font-medium text-gray-700"
                     >
-                      {email.from}
+                      {email.userName || 'Unknown User'}
                     </h4>
                     {email.hasAttachment && (
                       <MdAttachment className="w-3 h-3 text-gray-400 flex-shrink-0" />
                     )}
                   </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0">{email.time}</span>
+                  <span className="text-xs text-gray-500 flex-shrink-0">{formatTime(email.createdAt)}</span>
                 </div>
 
                 <h5
-                  className={`text-sm truncate mb-1 ${
-                    !email.read ? "font-semibold text-gray-900" : "font-normal text-gray-700"
-                  }`}
+                  className="text-sm truncate mb-1 font-normal text-gray-700"
                 >
-                  {email.subject}
+                  {email.subject || 'No Subject'}
                 </h5>
 
-                <p className="text-xs text-gray-500 truncate">{email.preview}</p>
+                <p className="text-xs text-gray-500 truncate">{stripHtml(email.message || 'No content')}</p>
               </div>
             </div>
           </div>
         ))}
+        
+        {/* Empty State */}
+        {emailList.length === 0 && !loading && !error && (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center">
+              <p className="text-gray-500">No emails found</p>
+              <button
+                onClick={onRefresh}
+                className="mt-2 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+      )}
 
       {/* Footer */}
       <div className="border-t border-gray-200 p-3 flex-shrink-0">
         <div className="flex justify-between items-center text-xs text-gray-500">
-          <span>{emails.filter((email) => !email.read).length} unread emails</span>
+          <span>{emailList.length} emails</span>
           {selectedEmails.length > 0 && (
             <span className="text-orange-600 font-medium">
               {selectedEmails.length} selected

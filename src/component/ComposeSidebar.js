@@ -27,9 +27,6 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
       case 'compose':
         router.push('/mail');
         break;
-      case 'all-mails':
-        router.push('/mail/all-mails');
-        break;
       case 'primary':
         router.push('/mail/primary');
         break;
@@ -65,7 +62,6 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
 
   // Navigation items for email management
   const navigationItems = [
-    { id: "all-mails", label: "All Mails", icon: <MdEmail className="w-5 h-5 text-orange-500" />, count: 12, route: "/mail/all-mails" },
     { id: "primary", label: "Primary", icon: <MdStarOutline className="w-5 h-5 text-orange-500" />, count: 5, route: "/mail/primary" },
     { id: "starred", label: "Starred", icon: <MdStar className="w-5 h-5 text-orange-500" />, count: 3, route: "/mail/starred" },
     { id: "draft", label: "Draft", icon: <MdDrafts className="w-5 h-5 text-orange-500" />, count: 2, route: "/mail/draft" },

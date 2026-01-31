@@ -5,10 +5,10 @@ import {
 
 export default function ComposePage() {
   return (
-    <div className="h-full ">
+    <div className="h-full hidden lg:block">
       <div className="w-full max-w-none sm:max-w-8xl  mx-0 sm:mx-1 md:mx-1 lg:mx-1 py-0 sm:py-1 md:py-1">
         {/* Main Content Card */}
-        <div className="bg-white border-0 sm:border rounded-none sm:rounded-lg border-gray-200 overflow-hidden shadow-none  w-full">
+        <div className="bg-white   overflow-hidden shadow-none  w-full h-full md:h-[700px] lg:h-[600px]  ">
           <div className="p-2 sm:p-6 md:p-8">
             {/* Large Mail Icon Section */}
             <div className="flex flex-col items-center justify-center py-16 mt-8">

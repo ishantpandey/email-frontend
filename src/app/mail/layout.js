@@ -1,16 +1,61 @@
 "use client";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import Logo from "@/component/Logo";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
 import ComposeSidebar from "@/component/ComposeSidebar";
 import EmailList from "@/component/EmailList";
 import MobileNavigation from "@/component/MobileNavigation";
 import AuthWrapper from "@/component/AuthWrapper";
+import { setLoading, setEmails, setError, setSelectedEmail } from "@/store/slices/emailSlice";
 
 export default function ComposeLayout({ children }) {
-  const { user } = useSelector((state) => state.auth);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
-  const [selectedEmailId, setSelectedEmailId] = useState(null);
+  const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
+  const { emails, loading, error, selectedEmailId } = useSelector((state) => state.email);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Fetch emails from API
+  const fetchEmails = async () => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      
+      // Get token from Redux or localStorage
+      let authToken = token;
+      if (!authToken && typeof window !== 'undefined') {
+        authToken = localStorage.getItem('authToken');
+      }
+      
+      // Prepare headers with bearer token
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+      
+      const API_URL = process.env.NEXT_PUBLIC_API_URL 
+      const EMAIL_LIST_ENDPOINT = process.env.NEXT_PUBLIC_EMAIL_LIST_ENDPOINT 
+    // console.log('Fetching emails from:', `${API_URL}${EMAIL_LIST_ENDPOINT}`);
+      const response = await axios.get(`${API_URL}${EMAIL_LIST_ENDPOINT}`, {
+        headers
+      });
+      // Extract emails from nested response structure
+      const emailsData = response.data?.data?.emails || response.data || [];
+      dispatch(setEmails(emailsData));
+    } catch (err) {
+      console.error('Failed to fetch emails:', err);
+      dispatch(setError(err.response?.data?.message || 'Failed to fetch emails'));
+      dispatch(setEmails([]));
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    fetchEmails();
+  }, [dispatch]);
 
   return (
     <AuthWrapper>
@@ -25,7 +70,7 @@ export default function ComposeLayout({ children }) {
         <div className="flex-1 flex overflow-hidden relative">
           {/* Sidebar */}
           <div
-            className={`w-64 md:w-56 lg:w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
+            className={`w-64 md:w-60 lg:w-68 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${
               sidebarOpen
                 ? "fixed left-0 top-16 h-[calc(100vh-64px)] transform translate-x-0 z-30"
                 : "fixed left-0 top-16 h-[calc(100vh-64px)] transform -translate-x-full z-30"
@@ -36,20 +81,32 @@ export default function ComposeLayout({ children }) {
               onClose={() => setSidebarOpen(false)}
             />
           </div>
-
+   
           {/* Email List */}
-          <div className=" flex-shrink-0">
+          <div className={`flex-shrink-0 ${
+            selectedEmailId ? 'hidden lg:block' : 'block'
+          }`}>
             <EmailList
               selectedEmailId={selectedEmailId}
-              onEmailSelect={setSelectedEmailId}
+              onEmailSelect={(id) => dispatch(setSelectedEmail(id))}
+              emails={emails}
+              loading={loading}
+              error={error}
+              onRefresh={fetchEmails}
             />
           </div>
 
           {/* Main Content Area */}
-          <div className=" flex-1 flex flex-col min-w-0 lg:ml-0">
+          <div className={`flex-1 flex flex-col min-w-0 lg:ml-0 ${
+            selectedEmailId ? 'block' : 'hidden'
+          }`}>
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
-              <div className="  h-full p-2 sm:p-2">{children}</div>
+              <div className="h-full p-1 sm:p-1">
+                {/* Back button for small screens when email is selected */}
+               
+                {children}
+              </div>
             </main>
 
             {/* Footer */}

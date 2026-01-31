@@ -24,7 +24,8 @@ import { BsFillCalendarDateFill } from "react-icons/bs";
 import {
   MdPeople,
   MdSubject,
-  MdCalendarToday
+  MdCalendarToday,
+  MdPublic
 } from "react-icons/md";
 import { useSelector } from "react-redux";
 import CustomChips from "@/component/CustomChips";
@@ -320,7 +321,7 @@ export default function ComposePage() {
                     )}
 
                     {emailData.userType === "all" && (
-                      <div className="w-full p-3 bg-orange-50 border border-orange-300 rounded-lg text-center">
+                      <div className="w-full p-1.5  border border-orange-300 rounded-lg text-center">
                         <span className="text-orange-800 text-sm flex items-center justify-center gap-1">
                           <MdPublic className="w-4 h-4 text-orange-500" />
                           <span>Broadcasting to all users</span>

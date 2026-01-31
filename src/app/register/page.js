@@ -3,7 +3,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import MobileNavigation from '../../component/MobileNavigation';
-import { FaUser, FaEnvelope, FaLock, FaExclamationCircle, FaGoogle, FaGithub, FaArrowRight } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaExclamationCircle, FaGoogle, FaGithub, FaArrowRight, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 // Memoize heavy or frequently re-rendered components
 const AnimatedButton = dynamic(() => import('../../component/AnimatedButton'), { ssr: false });
@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [notification, setNotification] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -233,18 +234,29 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 pl-12 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 pl-12 pr-12 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     placeholder="Create a strong password"
                   />
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                     <FaLock className="w-5 h-5 text-orange-400" />
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-orange-400 hover:text-orange-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash className="w-4 h-4" />
+                    ) : (
+                      <FaEye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
                 
                 {/* Password Strength Indicator */}
