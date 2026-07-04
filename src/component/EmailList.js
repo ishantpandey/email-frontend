@@ -182,14 +182,25 @@ export default function EmailList({ selectedEmailId, onEmailSelect, emails = [],
         {/* Empty State */}
         {emailList.length === 0 && !loading && !error && (
           <div className="flex-1 flex items-center justify-center p-8">
-            <div className="text-center">
-              <p className="text-gray-500">No emails found</p>
-              <button
-                onClick={onRefresh}
-                className="mt-2 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-              >
-                Refresh
-              </button>
+            <div className="text-center max-w-sm">
+              <div className="mb-4">
+                <svg 
+                  className="mx-auto h-24 w-24 text-gray-300" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={1.5} 
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Your inbox is empty</h3>
+              <p className="text-gray-500 mb-6">Start by composing your first email or refresh to check for new messages.</p>
+             
             </div>
           </div>
         )}

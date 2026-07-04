@@ -25,10 +25,12 @@ import {
   MdPeople,
   MdSubject,
   MdCalendarToday,
-  MdPublic
+  MdPublic,
+  MdArrowBack
 } from "react-icons/md";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector } from "react-redux";
 import CustomChips from "@/component/CustomChips";
+import { setSelectedEmail } from "@/store/slices/emailSlice";
 const Notification = dynamic(() => import("@/component/Notification"), {
   ssr: false,
 });
@@ -46,6 +48,7 @@ export default function ComposePage() {
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [bulkEmails, setBulkEmails] = useState([]); // For bulk email addresses
   const [notification, setNotification] = useState(null); // For success/error notifications
+  const dispatch = useDispatch();   
 
   const handleInputChange = useCallback((field, value) => {
     setEmailData((prev) => ({
@@ -133,6 +136,20 @@ export default function ComposePage() {
             <div className="bg-white">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
+                  <Button
+                              icon={<MdArrowBack className="w-5 h-5" />}
+                              onClick={() => {
+                                dispatch(setSelectedEmail(null));
+                                router.push('/mail');
+                              }}
+                              className="p-1 lg:hidden"
+                              text
+                              tooltip="Back to inbox"
+                              tooltipOptions={{ position: 'bottom' }}
+                              style={{
+                                color: "#6b7280"
+                              }}
+                            />
                   <div className="w-2 h-6 bg-orange-500 rounded-full mr-3"></div>
                   <h6 className="text-xl font-semibold text-gray-900">
                     Email Composition

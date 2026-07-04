@@ -2,7 +2,7 @@
 import { useSelector } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  MdInbox,
+  
   MdStar,
   MdStarOutline,
   MdDrafts,
@@ -11,9 +11,9 @@ import {
   MdSchedule,
   MdGroup,
   MdDelete,
-  MdClose,
+
   MdAdd,
-  MdEmail,
+
 } from "react-icons/md";
 
 export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
@@ -25,7 +25,7 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
   const handleNavigation = (itemId) => {
     switch(itemId) {
       case 'compose':
-        router.push('/mail');
+        router.push('/mail/compose-mail');
         break;
       case 'primary':
         router.push('/mail/primary');
@@ -92,8 +92,8 @@ export default function ComposeSidebar({ isOpen = true, onClose = () => {} }) {
 
   // Check if item is active based on current path
   const isItemActive = (route) => {
-    if (route === '/compose-mail') {
-      return pathname === '/compose-mail' || pathname.startsWith('/compose-mail/');
+    if (route === '/mail/compose-mail') {
+      return pathname === '/mail/compose-mail' || pathname.startsWith('/mail/compose-mail/');
     }
     return pathname === route;
   };

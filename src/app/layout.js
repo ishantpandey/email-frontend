@@ -5,6 +5,7 @@ import "./globals.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 
 import ReduxProvider from "../providers/ReduxProvider";
+import GoogleAuthProvider from "../providers/GoogleAuthProvider";
 import { PrimeReactProvider } from "primereact/api";
 
 
@@ -31,11 +32,13 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <PrimeReactProvider value={{ ripple: true, locale: "en" }}>
-          <ReduxProvider>
-            <main>
-              {children}
-            </main>
-          </ReduxProvider>
+          <GoogleAuthProvider>
+            <ReduxProvider>
+              <main>
+                {children}
+              </main>
+            </ReduxProvider>
+          </GoogleAuthProvider>
         </PrimeReactProvider>
       </body>
     </html>

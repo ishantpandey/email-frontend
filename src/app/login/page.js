@@ -6,6 +6,7 @@ import { FaArrowRight, FaEnvelope, FaExclamationCircle, FaEye, FaEyeSlash, FaLoc
 import { useDispatch, useSelector } from "react-redux";
 import MobileNavigation from "../../component/MobileNavigation";
 import { setAuthData, setAuthError, setLoading } from "../../store/slices/authSlice";
+import { useGoogleLogin } from '@react-oauth/google';
 const AnimatedButton = dynamic(() => import("../../component/AnimatedButton"), { ssr: false });
 const Notification = dynamic(() => import("../../component/Notification"), { ssr: false });
 const ForgotPasswordModal = dynamic(() => import("../../component/ForgotPasswordModal"), { ssr: false });
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [notification, setNotification] = useState(null);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Check if user is already authenticated and redirect
   useEffect(() => {
@@ -202,6 +204,41 @@ export default function LoginPage() {
     setNotification(null);
   };
 
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsGoogleLoading(true);
+      setError('');
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENDPOINT}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: tokenResponse.access_token }),
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.message || 'Google login failed');
+        }
+        dispatch(setAuthData({ user: data.user, token: data.token }));
+        setNotification({ type: 'success', message: 'Signed in with Google successfully!' });
+        setTimeout(() => {
+          const redirectTo = searchParams.get('redirect');
+          router.push(redirectTo ? `/${redirectTo}` : '/');
+        }, 1500);
+      } catch (err) {
+        setError(err.message || 'Google login failed. Please try again.');
+        dispatch(setAuthError(err.message || 'Google login failed'));
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Google login failed. Please try again.');
+    },
+  });
+
   return (
     <>
       <MobileNavigation />
@@ -231,7 +268,7 @@ export default function LoginPage() {
               <p className="text-orange-700">Sign in to your FlowMail account</p>
             </div>
             {/* Login Form */}
-            <div className="bg-orange-50/80 backdrop-blur-xl rounded-3xl p-4 border border-orange-100 shadow-xl">
+            <div className=" backdrop-blur-xl rounded-xl p-4 border border-gray-200 ">
               {/* Error Message */}
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
@@ -282,7 +319,7 @@ export default function LoginPage() {
                       value={formData.password}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 pl-10 pr-10 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 pl-10 pr-10 bg-white/90 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                       placeholder="Enter your password"
                     />
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -341,8 +378,8 @@ export default function LoginPage() {
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-orange-200"></div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-orange-50 text-orange-500">
+                  <div className="relative flex justify-center text-xs p-1.5">
+                    <span className="px-2 bg-orange-300 text-white rounded-full">
                       Or continue with
                     </span>
                   </div>
@@ -350,8 +387,13 @@ export default function LoginPage() {
                 <div className="grid grid-cols-2 gap-3">
                  <button
                   type="button"
-                  className="flex items-center justify-center px-4 py-2 border border-orange-200 rounded-xl bg-white/90 hover:bg-white transition-all duration-200 group"
+                  onClick={() => googleLogin()}
+                  disabled={isGoogleLoading || isLoading}
+                  className="flex items-center justify-center px-4 py-2 border border-orange-200 rounded-xl bg-white/90 hover:bg-white transition-all duration-200 group disabled:opacity-60 disabled:cursor-not-allowed"
                 >
+                  {isGoogleLoading ? (
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-orange-400 border-t-transparent rounded-full" />
+                  ) : (
                   <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -370,8 +412,9 @@ export default function LoginPage() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
+                  )}
                   <span className="text-orange-600 group-hover:text-orange-800">
-                    Google
+                    {isGoogleLoading ? 'Connecting...' : 'Google'}
                   </span>
                 </button>
                   <button

@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { usePathname } from "next/navigation";
 import axios from "axios";
 import ComposeSidebar from "@/component/ComposeSidebar";
 import EmailList from "@/component/EmailList";
@@ -8,11 +9,13 @@ import MobileNavigation from "@/component/MobileNavigation";
 import AuthWrapper from "@/component/AuthWrapper";
 import { setLoading, setEmails, setError, setSelectedEmail } from "@/store/slices/emailSlice";
 
-export default function ComposeLayout({ children }) {
+export default function ComposeLayout({ children, params }) {
   const dispatch = useDispatch();
+  const pathname = usePathname();
   const { token } = useSelector((state) => state.auth);
   const { emails, loading, error, selectedEmailId } = useSelector((state) => state.email);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+   
 
   // Fetch emails from API
   const fetchEmails = async () => {
@@ -34,6 +37,8 @@ export default function ComposeLayout({ children }) {
       if (authToken) {
         headers.Authorization = `Bearer ${authToken}`;
       }
+
+   
       
       const API_URL = process.env.NEXT_PUBLIC_API_URL 
       const EMAIL_LIST_ENDPOINT = process.env.NEXT_PUBLIC_EMAIL_LIST_ENDPOINT 
@@ -84,7 +89,7 @@ export default function ComposeLayout({ children }) {
    
           {/* Email List */}
           <div className={`flex-shrink-0 ${
-            selectedEmailId ? 'hidden lg:block' : 'block'
+            (selectedEmailId || pathname === '/mail/compose-mail') ? 'hidden lg:block' : 'block'
           }`}>
             <EmailList
               selectedEmailId={selectedEmailId}
@@ -97,9 +102,7 @@ export default function ComposeLayout({ children }) {
           </div>
 
           {/* Main Content Area */}
-          <div className={`flex-1 flex flex-col min-w-0 lg:ml-0 ${
-            selectedEmailId ? 'block' : 'hidden'
-          }`}>
+          <div className={`flex-1 flex flex-col min-w-0 lg:ml-0 `}>
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
               <div className="h-full p-1 sm:p-1">
