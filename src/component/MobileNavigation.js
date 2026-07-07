@@ -118,7 +118,11 @@ export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle 
                 >
                   <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center ring-2 ring-orange-100 hover:ring-orange-200 transition-all">
                     <span className="text-white text-sm font-medium">
-                      {user.name?.charAt(0)?.toUpperCase() || user.firstName?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                      {user.profileImage ? (
+                        <img src={user.profileImage} alt="Profile" className="w-8 h-8 rounded-full" />
+                      ) : (
+                        user.name?.charAt(0)?.toUpperCase() || user.firstName?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'
+                      )}
                     </span>
                   </div>
                 </button>
