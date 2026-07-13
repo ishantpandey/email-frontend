@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import Logo from './Logo';
 import AnimatedButton from './AnimatedButton';
+import { MdSmartToy } from 'react-icons/md';
 
 export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle = () => {} }) {
   const router = useRouter();
@@ -86,6 +87,7 @@ export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle 
               >
                 Contact
               </button>
+               
               {isAuthenticated && user ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-600 hover:text-gray-900 transition-colors duration-200 px-3 py-1.5 rounded-full">
@@ -93,10 +95,12 @@ export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle 
                   </span>
                   <button 
                     onClick={handleLogout}
-                    className="text-gray-600 hover:text-orange-600 transition-colors duration-200"
+                    className="text-gray-600 px-2 hover:text-orange-600 transition-colors duration-200"
                   >
                     Logout
                   </button>
+                   <img src="icons8-ai-chatting-50.png" alt="Chat Bot" className="w-6 h-6  text-orange-600 cursor-pointer"
+                 onClick={() => router.push('/chat')} />
                 </div>
               ) : (
                 <button 
@@ -106,6 +110,9 @@ export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle 
                   Sign In
                 </button>
               )}
+              
+             
+              
             </nav>
 
             {/* Mobile Menu Button */}
