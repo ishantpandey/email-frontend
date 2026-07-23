@@ -55,9 +55,9 @@ export default function MobileNavigation({ sidebarOpen = false, onSidebarToggle 
               {/* Logo */}
               <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push('/')}>
                 <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">F</span>
+                  <span className="text-white font-semibold text-sm">M</span>
                 </div>
-                <span className="text-xl font-semibold text-gray-900">FlowMail</span>
+                <span className="text-xl font-semibold text-gray-900">MailKaro</span>
               </div>
             </div>
 

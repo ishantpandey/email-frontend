@@ -41,9 +41,8 @@ export default function ComposeLayout({ children, params }) {
    
       
       const API_URL = process.env.NEXT_PUBLIC_API_URL 
-      const EMAIL_LIST_ENDPOINT = process.env.NEXT_PUBLIC_EMAIL_LIST_ENDPOINT 
     // console.log('Fetching emails from:', `${API_URL}${EMAIL_LIST_ENDPOINT}`);
-      const response = await axios.get(`${API_URL}${EMAIL_LIST_ENDPOINT}`, {
+      const response = await axios.get(`${API_URL}/email/list`, {
         headers
       });
       // Extract emails from nested response structure

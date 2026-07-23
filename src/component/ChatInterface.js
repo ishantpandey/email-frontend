@@ -187,7 +187,7 @@ export default function ChatInterface() {
                 Start a conversation
               </h2>
               <p className="text-gray-600 max-w-md mx-auto">
-                Ask me anything! I can help with questions, writing, coding, and more.
+                Ask me anything related to our application.
               </p>
             </div>
           ) : (

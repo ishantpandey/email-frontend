@@ -1,6 +1,4 @@
-// Backend API configuration
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-const CHAT_ENDPOINT = "/api/chat";
+
 
 /**
  * Get authentication token from localStorage
@@ -17,7 +15,7 @@ const CHAT_ENDPOINT = "/api/chat";
 export async function sendChatMessage(message, conversationHistory = [], token = null) {
   try {
     // Get token from localStorage if not provided
-    const authToken = token 
+    const authToken = token || localStorage.getItem("authToken");
     
     // Prepare request headers
     const headers = {
@@ -39,7 +37,7 @@ export async function sendChatMessage(message, conversationHistory = [], token =
     };
 
     // Send request to backend
-    const response = await fetch(`${BACKEND_URL}${CHAT_ENDPOINT}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(requestBody),

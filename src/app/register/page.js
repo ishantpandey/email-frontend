@@ -98,7 +98,7 @@ export default function RegisterPage() {
     setError('');
     try {
       // Make direct API call
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_REGISTER_ENDPOINT}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export default function RegisterPage() {
       setError('');
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENDPOINT}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/google`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -76,7 +76,7 @@ export default function LoginPage() {
 
     try {
       // Make direct API call
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_LOGIN_ENDPOINT}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +163,7 @@ export default function LoginPage() {
     setIsResettingPassword(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_REQUEST_PASSWORD_RESET_ENDPOINT}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/request-password-reset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -210,7 +210,7 @@ export default function LoginPage() {
       setError('');
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENDPOINT}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/google`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

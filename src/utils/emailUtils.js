@@ -111,7 +111,7 @@ export const prepareEmailPayload = (emailData, bulkEmails) => {
           priority: emailData.priority,
           userType: emailData.userType,
         },
-        endpoint: `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_EMAIL_SEND_ENDPOINT}`,
+        endpoint: `${process.env.NEXT_PUBLIC_API_URL}/email/send`,
       };
 
     case "bulk":
@@ -124,7 +124,7 @@ export const prepareEmailPayload = (emailData, bulkEmails) => {
           priority: emailData.priority,
           userType: emailData.userType,
         },
-        endpoint: `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_EMAIL_BULK_SEND_ENDPOINT}`,
+        endpoint: `${process.env.NEXT_PUBLIC_API_URL}/email/bulk-send`,
       };
 
     case "all":
@@ -135,7 +135,7 @@ export const prepareEmailPayload = (emailData, bulkEmails) => {
           priority: emailData.priority,
           userType: emailData.userType,
         },
-        endpoint: `${process.env.NEXT_PUBLIC_API_URL}${process.env.NEXT_PUBLIC_EMAIL_SEND_ALL_ENDPOINT}`,
+        endpoint: `${process.env.NEXT_PUBLIC_API_URL}/email/send-all`,
       };
 
     default:
