@@ -52,8 +52,8 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setRedirectTo(params.get("redirect"));
+    const searchParams = new URLSearchParams(window.location.search);
+    setRedirectTo(searchParams.get("redirect"));
   }, []);
 
   useEffect(() => {
