@@ -1,14 +1,17 @@
 'use client';
+import { Suspense } from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+
 const AnimatedButton = dynamic(() => import('../../component/AnimatedButton'), { ssr: false });
 const Notification = dynamic(() => import('../../component/Notification'), { ssr: false });
 const Logo = dynamic(() => import('../../component/Logo'), { ssr: false });
 import MobileNavigation from '../../component/MobileNavigation';
 import { FaLock, FaEye, FaEyeSlash, FaCheck, FaTimes, FaArrowLeft, FaSpinner } from 'react-icons/fa';
 
-export default function ResetPasswordPage() {
+// Main component that uses useSearchParams
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -55,7 +58,6 @@ export default function ResetPasswordPage() {
     if (name === 'password') {
       checkPasswordStrength(value);
     }
-    // Clear notification when user types
     if (notification) setNotification(null);
   }, [notification]);
 
@@ -161,7 +163,6 @@ export default function ResetPasswordPage() {
           message: data.message || 'Password reset successful! You can now login with your new password.'
         });
         
-        // Redirect to login page after 2 seconds
         setTimeout(() => {
           router.push('/login');
         }, 2000);
@@ -186,8 +187,10 @@ export default function ResetPasswordPage() {
     setNotification(null);
   };
 
+  // Your JSX return statement here (your existing UI code)
   return (
-    <>
+    // Your existing reset password JSX
+     <>
       <MobileNavigation />
       <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
         {/* Animated background elements */}
@@ -380,5 +383,18 @@ export default function ResetPasswordPage() {
       </div>
     </div>
     </>
+  );
+}
+
+// Export wrapped with Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
