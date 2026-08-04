@@ -33,7 +33,7 @@ export default function ChatInterface() {
     inputRef.current?.focus();
   }, []);
 
-  // Handle sending messages
+  // Handle sending messages with streaming
   const handleSend = useCallback(async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -45,39 +45,68 @@ export default function ChatInterface() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputValue.trim();
     setInputValue("");
     setIsLoading(true);
     setIsTyping(true);
     setError(null);
 
+    // Create a placeholder assistant message that will be updated with streaming content
+    const assistantMessageId = Date.now() + 1;
+    const assistantMessage = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      sources: [],
+      timestamp: new Date().toISOString(),
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Simulate typing delay for realistic UX
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Handle streaming response
+      const response = await sendMessage(
+        currentInput,
+        messages,
+        (chunk) => {
+          // Update the assistant message content with each chunk
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        },
+        token
+      );
 
-      const response = await sendMessage(inputValue.trim(), messages, token);
-
-      const assistantMessage = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: response.content,
-        sources: response.sources || [],
-        timestamp: new Date().toISOString(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      // Update with final sources when streaming is complete
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, sources: response.sources || [], isStreaming: false }
+            : msg
+        )
+      );
     } catch (err) {
       console.error("Chat error:", err);
       setError(err.message || "Failed to send message. Please try again.");
       
-      // Add error message to chat
-      const errorMessage = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: "I apologize, but I encountered an error processing your request. Please try again.",
-        isError: true,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      // Update the assistant message with error
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content: "I apologize, but I encountered an error processing your request. Please try again.",
+                isError: true,
+                isStreaming: false,
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
       setIsTyping(false);
@@ -105,7 +134,7 @@ export default function ChatInterface() {
     }
   }, []);
 
-  // Regenerate last response
+  // Regenerate last response with streaming
   const handleRegenerate = useCallback(async () => {
     if (messages.length < 2 || isLoading) return;
 
@@ -122,27 +151,59 @@ export default function ChatInterface() {
     setIsTyping(true);
     setError(null);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // Create a new assistant message for streaming
+    const assistantMessageId = Date.now();
+    const assistantMessage = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      sources: [],
+      timestamp: new Date().toISOString(),
+      isStreaming: true,
+    };
 
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    try {
       const response = await sendMessage(
         lastUserMessage.content,
         trimmedMessages.slice(0, -1),
+        (chunk) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        },
         token
       );
 
-      const assistantMessage = {
-        id: Date.now(),
-        role: "assistant",
-        content: response.content,
-        sources: response.sources || [],
-        timestamp: new Date().toISOString(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      // Update with final sources
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, sources: response.sources || [], isStreaming: false }
+            : msg
+        )
+      );
     } catch (err) {
       console.error("Regenerate error:", err);
       setError(err.message || "Failed to regenerate response.");
+      
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content: "Failed to regenerate response.",
+                isError: true,
+                isStreaming: false,
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
       setIsTyping(false);
@@ -154,7 +215,7 @@ export default function ChatInterface() {
       {/* Header */}
       <MobileNavigation />
 
-      {/* Error Banner */}
+           {/* Error Banner */}
       {error && (
         <div className="bg-red-50 border-b border-red-200 px-4 py-3">
           <div className="max-w-4xl mx-auto flex items-start gap-3">
@@ -196,61 +257,44 @@ export default function ChatInterface() {
             ))
           )}
 
-          {isTyping && <TypingIndicator />}
-
           <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 px-4 py-4 sm:px-6 shadow-lg">
+      <div className="bg-white px-4 py-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="relative flex items-end gap-3">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type your message... (Press Enter to send)"
-                disabled={isLoading}
-                rows={1}
-                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 
-                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 
-                         resize-none disabled:bg-gray-50 disabled:cursor-not-allowed
-                         transition-all duration-200 text-gray-900 placeholder-gray-400
-                         max-h-32 overflow-y-auto"
-                style={{
-                  minHeight: "48px",
-                  height: "auto",
-                }}
-                onInput={(e) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = e.target.scrollHeight + "px";
-                }}
-              />
-              {inputValue.trim() && (
-                <button
-                  onClick={handleSend}
-                  disabled={isLoading}
-                  className="absolute right-2 bottom-2 p-2 rounded-lg bg-indigo-600 
-                           text-white hover:bg-indigo-700 disabled:opacity-50 
-                           disabled:cursor-not-allowed transition-colors shadow-md
-                           hover:shadow-lg transform hover:scale-105 active:scale-95"
-                  title="Send message"
-                >
-                  <HiOutlinePaperAirplane className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Helper Text */}
-          <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-            <span>Press Enter to send, Shift + Enter for new line</span>
-            {isLoading && (
-              <span className="text-white font-medium">Thinking...</span>
-            )}
+          <div className="relative">
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Type your message..."
+              disabled={isLoading}
+              rows={1}
+              className="w-full px-4 py-3 pr-12 rounded-full border border-gray-300 
+                       resize-none disabled:bg-gray-50 disabled:cursor-not-allowed
+                       text-gray-900 placeholder-gray-400 outline-none"
+              style={{
+                minHeight: "48px",
+                height: "auto",
+              }}
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={isLoading || !inputValue.trim()}
+              className="absolute right-2 bottom-2 p-2 rounded-full bg-blue-600 
+                       text-white hover:bg-blue-700 disabled:opacity-50 
+                       disabled:cursor-not-allowed"
+              title="Send message"
+            >
+              <HiOutlinePaperAirplane className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>

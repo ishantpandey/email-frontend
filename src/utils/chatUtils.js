@@ -1,18 +1,13 @@
 
-
 /**
- * Get authentication token from localStorage
- * @returns {string|null} - Auth token
- */
-
-/**
- * Send a chat message to backend and get AI response
+ * Send a chat message to backend and get streaming AI response
  * @param {string} message - User's message
  * @param {Array} conversationHistory - Previous messages in the conversation
+ * @param {function} onChunk - Callback for each streamed chunk
  * @param {string} token - Optional authentication token
- * @returns {Promise<Object>} - Response with content and sources
+ * @returns {Promise<Object>} - Response with complete content and sources
  */
-export async function sendChatMessage(message, conversationHistory = [], token = null) {
+export async function sendChatMessageStreaming(message, conversationHistory = [], onChunk = null, token = null) {
   try {
     // Get token from localStorage if not provided
     const authToken = token || localStorage.getItem("authToken");
@@ -29,7 +24,7 @@ export async function sendChatMessage(message, conversationHistory = [], token =
     // Prepare request body
     const requestBody = {
       question: message,
-      // Include conversation history if your backend supports it
+      stream: true, // Enable streaming
       history: conversationHistory.map((msg) => ({
         role: msg.role,
         content: msg.content,
@@ -37,7 +32,7 @@ export async function sendChatMessage(message, conversationHistory = [], token =
     };
 
     // Send request to backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/stream`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(requestBody),
@@ -52,31 +47,98 @@ export async function sendChatMessage(message, conversationHistory = [], token =
       );
     }
 
-    const data = await response.json();
+    // Handle streaming response from LangChain
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = '';
+    let sources = [];
+    let buffer = '';
 
-    // Check if response was successful
-    if (!data.success) {
-      throw new Error(data.message || data.error || "Failed to get response from AI");
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+      
+      // Decode the chunk and add to buffer
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      
+      // Keep the last incomplete line in the buffer
+      buffer = lines.pop() || '';
+      
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        
+        // Handle SSE format: "data: ..."
+        let data = line;
+        if (line.startsWith('data: ')) {
+          data = line.slice(6);
+        }
+        
+        if (data === '[DONE]') continue;
+        
+        try {
+          // Try to parse as JSON
+          const parsed = JSON.parse(data);
+          
+          // Handle different response formats
+          if (parsed.content) {
+            // LangChain chunk format: { content: "text" }
+            fullContent += parsed.content;
+            if (onChunk) {
+              onChunk(parsed.content);
+            }
+          } else if (parsed.type === 'content' && parsed.data) {
+            // Alternative format: { type: "content", data: "text" }
+            fullContent += parsed.data;
+            if (onChunk) {
+              onChunk(parsed.data);
+            }
+          } else if (parsed.type === 'sources' || parsed.sources) {
+            // Sources at the end
+            sources = parsed.sources || parsed.data || [];
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.message || 'Streaming error');
+          } else if (typeof parsed === 'string') {
+            // Plain string chunk
+            fullContent += parsed;
+            if (onChunk) {
+              onChunk(parsed);
+            }
+          }
+        } catch (e) {
+          // If not JSON, treat as plain text chunk
+          if (e instanceof SyntaxError) {
+            fullContent += data;
+            if (onChunk) {
+              onChunk(data);
+            }
+          } else {
+            throw e;
+          }
+        }
+      }
     }
 
-    // Format sources for the chat interface
-    const formattedSources = (data.sources || []).map((source, index) => ({
-      title: source.sourceName || `Source ${index + 1}`,
-      url: source.url || null,
-      snippet: `${source.sourceType || 'Document'} - Page ${source.page || 'N/A'} (Score: ${(source.score * 100).toFixed(1)}%)`,
-      documentId: source.documentId,
-      page: source.page,
-      score: source.score,
-    }));
+    // Process any remaining buffer
+    if (buffer.trim()) {
+      try {
+        const parsed = JSON.parse(buffer);
+        if (parsed.sources) {
+          sources = parsed.sources;
+        }
+      } catch (e) {
+        // Ignore parse errors for final buffer
+      }
+    }
 
     return {
-      content: data.answer,
-      sources: formattedSources,
+      content: fullContent,
+      sources: sources,
     };
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("Chat streaming error:", error);
     
-    // Handle network errors
     if (error.message.includes('fetch')) {
       throw new Error("Unable to connect to chat service. Please check your connection.");
     }
@@ -85,103 +147,4 @@ export async function sendChatMessage(message, conversationHistory = [], token =
   }
 }
 
-/**
- * Format conversation history for API
- * @param {Array} messages - Array of message objects
- * @returns {Array} - Formatted history
- */
-export function formatConversationHistory(messages) {
-  return messages.map((msg) => ({
-    role: msg.role,
-    content: msg.content,
-  }));
-}
-
-/**
- * Validate message before sending
- * @param {string} message - Message to validate
- * @returns {Object} - Validation result
- */
-export function validateMessage(message) {
-  if (!message || typeof message !== "string") {
-    return { isValid: false, error: "Message must be a string" };
-  }
-
-  const trimmed = message.trim();
-  
-  if (trimmed.length === 0) {
-    return { isValid: false, error: "Message cannot be empty" };
-  }
-
-  if (trimmed.length > 10000) {
-    return { isValid: false, error: "Message is too long (max 10,000 characters)" };
-  }
-
-  return { isValid: true, message: trimmed };
-}
-
-/**
- * Mock function for testing without backend
- * Use this if backend is not available
- */
-export async function sendChatMessageMock(message, conversationHistory = []) {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  const mockResponses = [
-    {
-      answer: "I'm a mock AI assistant connected to your backend. I can help you with various tasks including answering questions, writing code, and providing information. How can I assist you today?",
-      sources: [
-        {
-          sourceName: "System Documentation",
-          sourceType: "document",
-          page: 1,
-          score: 0.95,
-          documentId: "mock-doc-1",
-        },
-        {
-          sourceName: "User Guide",
-          sourceType: "text",
-          page: 3,
-          score: 0.87,
-          documentId: "mock-doc-2",
-        },
-      ],
-    },
-    {
-      answer: `You asked: "${message}"\n\nThis is a mock response. Your backend is configured at ${BACKEND_URL}${CHAT_ENDPOINT}. To use the real backend:\n\n1. Make sure your backend server is running\n2. The endpoint should accept POST requests with { question, history }\n3. It should return { success, answer, sources }\n\nThe chat interface is ready to connect!`,
-      sources: [
-        {
-          sourceName: "API Documentation",
-          sourceType: "document",
-          page: 1,
-          score: 0.92,
-          documentId: "mock-doc-3",
-        },
-      ],
-    },
-  ];
-
-  const mockData = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-  
-  // Format sources
-  const formattedSources = mockData.sources.map((source, index) => ({
-    title: source.sourceName || `Source ${index + 1}`,
-    url: source.url || null,
-    snippet: `${source.sourceType || 'Document'} - Page ${source.page || 'N/A'} (Score: ${(source.score * 100).toFixed(1)}%)`,
-    documentId: source.documentId,
-    page: source.page,
-    score: source.score,
-  }));
-
-  return {
-    content: mockData.answer,
-    sources: formattedSources,
-  };
-}
-
-/**
- * Export the appropriate function based on environment
- * To use mock mode, change this to: export const sendMessage = sendChatMessageMock;
- */
-export const sendMessage = sendChatMessage;
+export const sendMessage = sendChatMessageStreaming;

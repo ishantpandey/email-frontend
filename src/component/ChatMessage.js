@@ -5,10 +5,11 @@ import { BiLink } from "react-icons/bi";
 import { useSelector } from "react-redux";
 
 export default function ChatMessage({ message }) {
-    const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [copied, setCopied] = useState(false);
   const isUser = message.role === "user";
   const isError = message.isError;
+  const isStreaming = message.isStreaming;
 
   // Format timestamp
   const formatTime = (timestamp) => {
@@ -36,27 +37,40 @@ export default function ChatMessage({ message }) {
     >
       {!isUser && (
         <div className="flex-shrink-0">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            isError ? "bg-red-100" : "bg-orange-600"
-          }`}>
-            <MdSmartToy className={`w-4 h-4 ${isError ? "text-red-600" : "text-white"}`} />
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              isError ? "bg-red-100" : "bg-orange-600"
+            }`}
+          >
+            <MdSmartToy
+              className={`w-4 h-4 ${isError ? "text-red-600" : "text-white"}`}
+            />
           </div>
         </div>
       )}
 
-      <div className={`flex flex-col max-w-[80%] sm:max-w-[70%] ${isUser ? "items-end" : "items-start"}`}>
+      <div
+        className={`flex flex-col max-w-[80%] sm:max-w-[70%] ${isUser ? "items-end" : "items-start"}`}
+      >
         {/* Message Bubble */}
         <div
           className={`rounded-2xl px-4 py-2 ${
             isUser
               ? "bg-orange-500 text-white"
               : isError
-              ? "bg-red-50 text-red-900 border border-red-200"
-              : "bg-gray-100 text-gray-900"
+                ? "bg-red-50 text-red-900 border border-red-200"
+                : " text-gray-900 border border-gray-200 bg-white"
           } shadow-sm`}
         >
           <div className="text-xs sm:text-xs whitespace-pre-wrap break-words">
-            {message.content}
+            <div
+              className="prose prose-sm max-w-none break-words"
+              dangerouslySetInnerHTML={{ __html: message.content }}
+            />
+            {/* Streaming cursor */}
+            {isStreaming && (
+              <span className="inline-block w-1 h-4 bg-gray-600 ml-0.5 animate-pulse"></span>
+            )}
           </div>
 
           {/* Copy Button (for assistant messages) */}
@@ -64,7 +78,9 @@ export default function ChatMessage({ message }) {
             <button
               onClick={handleCopy}
               className={`mt-2 flex items-center gap-1.5 text-xs ${
-                isError ? "text-red-600 hover:text-red-700" : "text-gray-600 hover:text-gray-900"
+                isError
+                  ? "text-red-600 hover:text-red-700"
+                  : "text-gray-600 hover:text-gray-900"
               } opacity-0 group-hover:opacity-100 transition-opacity`}
               title="Copy message"
             >
@@ -137,11 +153,15 @@ export default function ChatMessage({ message }) {
       {isUser && (
         <div className="flex-shrink-0">
           <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-           {user?.profileImage ? (
-             <img src={user?.profileImage} alt="Profile" className="w-6 h-6 rounded-full" />
-           ) : (
-             <MdPerson className="w-5 h-5 text-gray-600" />
-           )}       
+            {user?.profileImage ? (
+              <img
+                src={user?.profileImage}
+                alt="Profile"
+                className="w-6 h-6 rounded-full"
+              />
+            ) : (
+              <MdPerson className="w-5 h-5 text-gray-600" />
+            )}
           </div>
         </div>
       )}
